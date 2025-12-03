@@ -1,45 +1,44 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven-3.9'
-        jdk 'JDK-17'
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/mallikarjunkolur/b7-java.git'
             }
         }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
-        }
-
-        stage('Package') {
-            steps {
-                sh 'mvn package'
-            }
-        }
-
-        stage('Archive Artifact') {
-            steps {
-                archiveArtifacts artifacts: 'target/*.jar, target/*.war', fingerprint: true
-            }
-        }
-    }
+stage('clean') {
+steps {
+sh 'mvn clean'
+}
+}
+stage('compile') {
+steps {
+sh 'mvn compile'
+}
+}
+stage('test') {
+steps {
+sh 'mvn test'
+}
+}
+stage('build') {
+steps {
+sh 'mvn clean install'
+}
+}
+stage('package') {
+steps {
+sh 'mvn package'
+}
+}
+}
+post {
+success {
+archiveArtifacts artifacts: 'target/*.jar, target/*.war', fingerprint: true
+}
+failure {
+echo "build failed"
+}
+}
 }
